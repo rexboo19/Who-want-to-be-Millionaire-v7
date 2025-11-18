@@ -26,6 +26,9 @@ class MathMillionaireGame {
         // Chart instance for class scores
         this.classScoreChart = null;
         
+        // Modal instance for lifeline/statistics
+        this.lifelineModalInstance = null;
+        
         // Class assignment tracking
         this.classes = []; // List of available classes
         this.questionClassAssignments = {}; // Track which class is assigned to each question
@@ -1008,13 +1011,45 @@ class MathMillionaireGame {
     
     // Show lifeline modal
     showLifelineModal(title, content) {
+        const modalElement = document.getElementById('lifelineModal');
         const titleElement = document.getElementById('lifeline-title');
+        const contentElement = document.getElementById('lifeline-content');
+        
+        // Set title and content
         titleElement.textContent = title;
         titleElement.style.fontSize = '1.5rem';
         titleElement.style.fontWeight = 'bold';
-        document.getElementById('lifeline-content').innerHTML = content;
-        const modal = new bootstrap.Modal(document.getElementById('lifelineModal'));
-        modal.show();
+        contentElement.innerHTML = content;
+        
+        // Get or create modal instance
+        if (!this.lifelineModalInstance) {
+            this.lifelineModalInstance = new bootstrap.Modal(modalElement, {
+                backdrop: true,
+                keyboard: true,
+                focus: true
+            });
+            
+            // Clean up on modal hide
+            modalElement.addEventListener('hidden.bs.modal', () => {
+                // Clean up any lingering backdrop
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => backdrop.remove());
+                
+                // Remove modal-open class from body if it exists
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+                
+                // Clean up chart if it exists
+                if (this.classScoreChart) {
+                    this.classScoreChart.destroy();
+                    this.classScoreChart = null;
+                }
+            }, { once: false });
+        }
+        
+        // Show the modal
+        this.lifelineModalInstance.show();
     }
     
     // Show statistics (similar to Ask the Audience, but can be clicked anytime)
